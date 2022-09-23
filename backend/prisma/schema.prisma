@@ -11,36 +11,37 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  email String? @unique
-  password String?
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
 }
 
 model Teacher {
-  id Int @id @default(autoincrement())
-  name String? @unique 
-  course_id Int
-  course Course @relation(fields: [course_id], references: [id], onDelete: NoAction)
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  course_id Int?
+  course    Course? @relation(fields: [course_id], references: [id], onDelete: NoAction)
 }
 
 model Course {
-  id Int @id @default(autoincrement())
-  name String?
-  teacher Teacher[]
-  classRooms Courses_Classes[]
+  id         Int               @id @default(autoincrement())
+  name       String
+  teacher    Teacher[]
+  classTime  ClassSchedule[]
 }
 
 model ClassRoom {
-  id Int @id @default(autoincrement())
-  name String?
-  courses Courses_Classes[]
+  id        Int               @id @default(autoincrement())
+  name      String
+  classTime ClassSchedule[]
 }
 
-model Courses_Classes {
-  courseId Int
-  course Course @relation(fields: [courseId], references: [id])
+model ClassSchedule {
+  id          Int       @id @default(autoincrement())
+  timeStart   DateTime
+  timeEnd     DateTime
   classRoomId Int
-  classRoom ClassRoom @relation(fields: [classRoomId], references: [id])
-  
-  @@id([classRoomId, courseId])
+  courseId    Int
+  classRoom   ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: NoAction)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: NoAction)
 }
