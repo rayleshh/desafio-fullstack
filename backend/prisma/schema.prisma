@@ -43,5 +43,5 @@ model ClassSchedule {
   classRoomId Int
   courseId    Int
   classRoom   ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: NoAction)
-  course      Course    @relation(fields: [courseId], references: [id], onDelete: NoAction)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
