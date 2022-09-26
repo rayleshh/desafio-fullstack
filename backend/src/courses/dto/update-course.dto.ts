@@ -1,10 +1,21 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { IsNumber, IsOptional } from 'class-validator';
-import { CreateCourseDto } from './create-course.dto';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Schedule } from './course-schedule-dto';
 
-export class UpdateCourseDto extends PartialType(CreateCourseDto) {
-    @IsNumber()
+export class UpdateCourseDto {
+    @IsString()
+    @IsNotEmpty()
     @IsOptional()
-    scheduleId?: number
+    courseName?: string
 
+    @IsNumber()
+    @IsNotEmpty()
+    @IsOptional()
+    teacherId?: number
+
+    @IsObject()
+    @ValidateNested()
+    @IsOptional()
+    @Type(() => Schedule)
+    schedule?: Schedule
 }
