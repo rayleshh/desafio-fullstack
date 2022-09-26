@@ -20,7 +20,7 @@ model Teacher {
   id        Int     @id @default(autoincrement())
   name      String  @unique
   course_id Int?
-  course    Course? @relation(fields: [course_id], references: [id], onDelete: NoAction)
+  course    Course? @relation(fields: [course_id], references: [id], onDelete: SetNull)
 }
 
 model Course {
@@ -42,6 +42,6 @@ model ClassSchedule {
   timeEnd     DateTime
   classRoomId Int
   courseId    Int
-  classRoom   ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: NoAction)
-  course      Course    @relation(fields: [courseId], references: [id], onDelete: NoAction)
+  classRoom   ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }

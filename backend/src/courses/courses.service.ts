@@ -1,35 +1,70 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Course, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly prisma: PrismaService) { }
+  // Initialize the prisma
+  constructor(private readonly prisma: PrismaService) {}
+  // Include block to be reused
+  private include: Prisma.CourseInclude = {
+    teacher: { select: { name: true } },
+    classTime: { include: { classRoom: { select: { name: true }} } },
+  };
 
-  async create(createCourseDto: CreateCourseDto) {
+  async create(dto: CreateCourseDto) {
     const data: Prisma.CourseCreateInput = {
-      name: createCourseDto.courseName,
-      teacher: { connect: { id: createCourseDto.teacherId } },
-      classTime: { create: { timeStart: createCourseDto.timeStart, timeEnd: createCourseDto.timeEnd, classRoomId: createCourseDto.classRoomId } }
-    }
+      name: dto.courseName,
+      teacher: { connect: { id: dto.teacherId } },
+      classTime: {
+        create: {
+          timeStart: dto.timeStart,
+          timeEnd: dto.timeEnd,
+          classRoomId: dto.classRoomId,
+        },
+      },
+    };
     return await this.prisma.course.create({ data });
   }
 
   async findAll() {
-    return await this.prisma.course.findMany({ include: { teacher: { select: { name: true } }, classTime: { include: { classRoom: true } } } });
+    return await this.prisma.course.findMany({ include: this.include });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} course`;
+  async findOne(id: number) {
+    return await this.prisma.course.findUnique({
+      where: { id },
+      include: this.include,
+    });
   }
 
-  update(id: number, updateCourseDto: UpdateCourseDto) {
-    return `This action updates a #${id} course`;
+  async update(id: number, dto: UpdateCourseDto): Promise<Course> {
+    const data: Prisma.CourseUpdateInput = {
+      name: dto.courseName,
+      teacher: dto.teacherId && { connect: { id: dto.teacherId } },
+      classTime: dto.schedule && {
+        // It'll be updated if it already exists, otherwise it'll be created.
+        upsert: {
+          where: {id: dto.schedule.scheduleId},
+          update: {
+            timeStart: dto.schedule.timeStart,
+            timeEnd: dto.schedule.timeEnd,
+            classRoomId: dto.schedule.classRoomId,
+          },
+          create: {
+            timeStart: dto.schedule.timeStart,
+            timeEnd: dto.schedule.timeEnd,
+            classRoomId: dto.schedule.classRoomId,
+          },
+        },
+      },
+    };
+    return await this.prisma.course.update({ where: { id }, data });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} course`;
+  async remove(id: number) {
+    return await this.prisma.course.delete({ where: { id } });
   }
 }
