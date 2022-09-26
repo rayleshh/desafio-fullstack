@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Course, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 
 @Injectable()
 export class CoursesService {
+  // Initialize the prisma
   constructor(private readonly prisma: PrismaService) {}
-  private include = {
+  // Include block to be reused
+  private include: Prisma.CourseInclude = {
     teacher: { select: { name: true } },
-    classTime: { include: { classRoom: true } },
+    classTime: { include: { classRoom: { select: { name: true }} } },
   };
 
   async create(dto: CreateCourseDto) {
@@ -38,22 +40,23 @@ export class CoursesService {
     });
   }
 
-  async update(id: number, dto: UpdateCourseDto) {
+  async update(id: number, dto: UpdateCourseDto): Promise<Course> {
     const data: Prisma.CourseUpdateInput = {
       name: dto.courseName,
       teacher: dto.teacherId && { connect: { id: dto.teacherId } },
-      classTime: (dto.timeStart || dto.timeEnd || dto.classRoomId) && {
+      classTime: dto.schedule && {
+        // It'll be updated if it already exists, otherwise it'll be created.
         upsert: {
-          where: (dto.scheduleId && { id: dto.scheduleId }) || {},
+          where: {id: dto.schedule.scheduleId},
           update: {
-            timeStart: dto.timeStart,
-            timeEnd: dto.timeEnd,
-            classRoomId: dto.classRoomId,
+            timeStart: dto.schedule.timeStart,
+            timeEnd: dto.schedule.timeEnd,
+            classRoomId: dto.schedule.classRoomId,
           },
           create: {
-            timeStart: dto.timeStart,
-            timeEnd: dto.timeEnd,
-            classRoomId: dto.classRoomId,
+            timeStart: dto.schedule.timeStart,
+            timeEnd: dto.schedule.timeEnd,
+            classRoomId: dto.schedule.classRoomId,
           },
         },
       },
