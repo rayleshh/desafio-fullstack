@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Schedule } from './course-schedule-dto';
 
 export class UpdateCourseDto {
@@ -8,10 +8,15 @@ export class UpdateCourseDto {
     @IsOptional()
     courseName?: string
 
-    @IsNumber()
-    @IsNotEmpty()
     @IsOptional()
-    teacherId?: number
+    @IsInt({each: true})
+    @IsArray()
+    teacherIdList?: number[]
+
+    @IsOptional()
+    @IsInt({each: true})
+    @IsArray()
+    teacherIdRemoveList?: number[]
 
     @IsObject()
     @ValidateNested()
