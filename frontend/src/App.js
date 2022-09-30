@@ -1,11 +1,16 @@
-import logo from './logo.svg';
 import './App.css';
-import Home from './pages/Home';
+import { Container } from '@mui/material';
+import { BrowserRouter } from 'react-router-dom';
+import RouterConfig from './navigation/RouterConfig';
 
 function App() {
   return (
     <div className="App">
-      <Home />
+      <Container>
+        <BrowserRouter>
+          <RouterConfig />
+        </BrowserRouter>
+      </Container>
     </div>
   );
 }
