@@ -7,25 +7,26 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 @Injectable()
 export class CoursesService {
   // Initialize the prisma
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
   // Include block to be reused
   private include: Prisma.CourseInclude = {
     teacher: { select: { name: true } },
-    classTime: { include: { classRoom: { select: { name: true }} } },
+    scheduleList: { include: { classRoomList: { select: { classRoom: { select: { name: true } } } } } },
   };
 
   async create(dto: CreateCourseDto) {
     const data: Prisma.CourseCreateInput = {
       name: dto.courseName,
-      teacher: { connect: { id: dto.teacherId } },
-      classTime: {
+      teacher: { connect: dto.teacherIdList.map(id => ({ id })) },
+      scheduleList: {
         create: {
-          timeStart: dto.timeStart,
-          timeEnd: dto.timeEnd,
-          classRoomId: dto.classRoomId,
-        },
-      },
-    };
+          timeStart: dto.timeStart, timeEnd: dto.timeEnd,
+          classRoomList: {
+            create: dto.classRoomIdList.map(id => ({ classRoomId: id }))
+          }
+        }
+      }
+    }
     return await this.prisma.course.create({ data });
   }
 
@@ -43,24 +44,21 @@ export class CoursesService {
   async update(id: number, dto: UpdateCourseDto): Promise<Course> {
     const data: Prisma.CourseUpdateInput = {
       name: dto.courseName,
-      teacher: dto.teacherId && { connect: { id: dto.teacherId } },
-      classTime: dto.schedule && {
-        // It'll be updated if it already exists, otherwise it'll be created.
-        upsert: {
-          where: {id: dto.schedule.scheduleId},
-          update: {
+      teacher: { connect: dto.teacherIdList?.map(id => ({ id })), disconnect: dto.teacherIdRemoveList?.map(id => ({ id })) },
+      scheduleList: dto.schedule && {
+        update: {
+          where: { id: dto.schedule.scheduleId },
+          data: {
             timeStart: dto.schedule.timeStart,
             timeEnd: dto.schedule.timeEnd,
-            classRoomId: dto.schedule.classRoomId,
-          },
-          create: {
-            timeStart: dto.schedule.timeStart,
-            timeEnd: dto.schedule.timeEnd,
-            classRoomId: dto.schedule.classRoomId,
-          },
-        },
-      },
-    };
+            classRoomList: {
+              connectOrCreate: dto.schedule.classRoomIdList?.map(id => ({ where: { classRoomId_classScheduleId: { classScheduleId: dto.schedule.scheduleId, classRoomId: id } }, create: { classRoomId: id } })),
+              delete: dto.schedule.classRoomIdRemoveList?.map(id => ({ classRoomId_classScheduleId: { classScheduleId: dto.schedule.scheduleId, classRoomId: id } }))
+            }
+          }
+        }
+      }
+    }
     return await this.prisma.course.update({ where: { id }, data });
   }
 

@@ -1,4 +1,4 @@
-import { IsNumber, IsNotEmpty, IsString } from "class-validator"
+import { IsNumber, IsNotEmpty, IsString, IsInt, IsOptional, IsArray } from "class-validator"
 
 export class Schedule {
     @IsNumber()
@@ -10,7 +10,13 @@ export class Schedule {
     @IsString()
     @IsNotEmpty()
     timeEnd: string
-    @IsNumber()
     @IsNotEmpty()
-    classRoomId: number
+    @IsInt({ each: true })
+    @IsArray()
+    classRoomIdList: number[]
+    @IsNotEmpty()
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    classRoomIdRemoveList?: number[]
 }
