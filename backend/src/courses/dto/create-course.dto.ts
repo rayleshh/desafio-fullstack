@@ -1,20 +1,24 @@
-import { IsArray, IsDateString, IsNumber, IsString } from "class-validator"
+import { IsArray, IsDateString, IsInt, IsOptional, IsString } from "class-validator"
 
 export class CreateCourseDto {
     @IsString()
     courseName: string
 
-    @IsNumber()
-    @IsArray({ each: true })
-    teacherIdList: number[]
+    @IsInt({ each: true })
+    @IsArray()
+    @IsOptional()
+    teacherIdList?: number[]
 
-    @IsNumber()
-    @IsArray({ each: true })
-    classRoomIdList: number[]
+    @IsInt({ each: true })
+    @IsArray()
+    @IsOptional()
+    classRoomIdList?: number[]
 
     @IsDateString()
-    timeStart: string
+    @IsOptional()
+    timeStart?: string
 
     @IsDateString()
-    timeEnd: string
+    @IsOptional()
+    timeEnd?: string
 }
