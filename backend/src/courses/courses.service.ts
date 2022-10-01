@@ -17,12 +17,13 @@ export class CoursesService {
   async create(dto: CreateCourseDto) {
     const data: Prisma.CourseCreateInput = {
       name: dto.courseName,
-      teacher: { connect: dto.teacherIdList.map(id => ({ id })) },
+      teacher: { connect: dto.teacherIdList?.map(id => ({ id })) },
       scheduleList: {
         create: {
-          timeStart: dto.timeStart, timeEnd: dto.timeEnd,
+          timeStart: dto.timeStart,
+          timeEnd: dto.timeEnd,
           classRoomList: {
-            create: dto.classRoomIdList.map(id => ({ classRoomId: id }))
+            create: dto.classRoomIdList?.map(id => ({ classRoomId: id }))
           }
         }
       }
