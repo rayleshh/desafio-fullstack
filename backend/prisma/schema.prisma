@@ -19,8 +19,8 @@ model User {
 model Teacher {
   id        Int     @id @default(autoincrement())
   name      String  @unique
-  course_id Int?
-  course    Course? @relation(fields: [course_id], references: [id], onDelete: SetNull)
+  courseId Int?
+  course    Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
 }
 
 model Course {
